@@ -7,11 +7,13 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:login_project/constats.dart';
 import 'package:login_project/home_page.dart';
 import 'package:login_project/widgets/custom_button.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 bool itIsSignUp = false;
 String? mainheading;
 String? prefixText;
 String? postfixText;
+
 
 login() {
   print('loginfn');
@@ -36,6 +38,7 @@ class LoginSignupScreen extends StatefulWidget {
 class _LoginSignupScreenState extends State<LoginSignupScreen> {
   TextEditingController usernamectr = TextEditingController();
   TextEditingController passwordctr = TextEditingController();
+
 
   @override
   void initState() {
@@ -173,10 +176,12 @@ Widget button_usable(
     password: password,
   );
 }
-signInWithGoogle( BuildContext context) async {
+Future<UserCredential> signInWithGoogle( BuildContext context) async {
   // Trigger the authentication flow
   final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
   Constants.email=googleUser?.email;
+  // SharedPreferences shpref=await SharedPreferences.getInstance();
+  // shpref.setString('email', Constants.email!);
   print(Constants.email);
   // Obtain the auth details from the request
   final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
@@ -188,9 +193,19 @@ signInWithGoogle( BuildContext context) async {
   );
 
   // Once signed in, return the UserCredential
-  await FirebaseAuth.instance.signInWithCredential(credential).then((value) => Navigator.push(context, MaterialPageRoute(
-    builder: (context) {
-      return HomePage();
-    },
-  )));
+  UserCredential usercred=await FirebaseAuth.instance.signInWithCredential(credential).then((value) async{
+    Navigator.push(context, MaterialPageRoute(
+      builder: (context) {
+        return HomePage();
+      },
+    ))
+    ;
+    return value;
+  }
+
+  );
+  SharedPreferences shpref= await SharedPreferences.getInstance();
+  shpref.setString('uid', usercred.user!.uid);
+  print(usercred.user!.uid??'no mail');
+return usercred;
 }

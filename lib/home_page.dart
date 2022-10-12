@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:login_project/login_signUp_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'constats.dart';
 
@@ -23,6 +24,22 @@ class _HomePageState extends State<HomePage> {
   TextEditingController chattxt = TextEditingController();
   List<String> chats = [];
   int i = 0;
+  String uid = '';
+
+  // String? constEmail=Constants.email;
+
+  Future<String> getUserSharedPreference() async {
+    SharedPreferences shpref = await SharedPreferences.getInstance();
+    uid= shpref.getString('uid')??'nop';
+    return uid;
+  }
+
+// @override
+//   void initState() {
+//     getUserSharedPreference();
+//     print('it is shredpreference $uid');
+//     super.initState();
+//   }
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +55,7 @@ class _HomePageState extends State<HomePage> {
               child: Icon(Icons.person, color: Colors.black87),
             ),
           ),
-          title: Text('User one'),
+          title: Text('${Constants.email}'),
           actions: [
             IconButton(
                 onPressed: () {
@@ -57,7 +74,18 @@ class _HomePageState extends State<HomePage> {
           backgroundColor: Colors.blue),
       body: Column(
         children: [
-          Expanded(child: bodyPart(chats)),
+          Expanded(
+            child: FutureBuilder(
+                future: getUserSharedPreference(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return bodyPart(chats, uid);
+                  }
+                  else{
+                    return Text('no uid');
+                  }
+                }),
+          ),
           Container(
             height: 65,
             decoration: BoxDecoration(
@@ -81,6 +109,7 @@ class _HomePageState extends State<HomePage> {
 
                         FirebaseFirestore.instance.collection('message').add({
                           'userName': Constants.email,
+                          'uid': uid,
                           'message': chattxt.text,
                           'time': DateTime.now().toString()
                         });
@@ -106,19 +135,18 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-Widget bodyPart(List chats) {
+Widget bodyPart(List chats, String uid) {
   return StreamBuilder(
       stream: FirebaseFirestore.instance.collection('message').snapshots(),
       builder: (context, snapshot) {
-
-        if(snapshot.data!=null) {
-          var temp3=snapshot.data!.docs;
+        if (snapshot.data != null) {
+          var temp3 = snapshot.data!.docs;
           temp3.sort(
-                (b,a) {
+            (b, a) {
               // return a.data()['time'].compareTo(b.data()['time']);
-                  var _first=DateTime.parse(a.data()['time']);
-                  var _second=DateTime.parse(b.data()['time']);
-                  return _first.compareTo(_second);
+              var _first = DateTime.parse(a.data()['time']);
+              var _second = DateTime.parse(b.data()['time']);
+              return _first.compareTo(_second);
             },
           );
           return ListView.separated(
@@ -130,17 +158,14 @@ Widget bodyPart(List chats) {
             },
             itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, index) {
-              print(snapshot.data!.docs[index].data()['time']);
-
-              var temp = snapshot.data!.docs;
-              String? user = temp3[index].data()['userName'];
+              print(snapshot.data!.docs[index].data());
+              String? user = temp3[index].data()['uid'];
               print('user is $user');
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: Text(
                   ' ${temp3[index].data()['message']} ',
-                  textAlign:
-                      user == Constants.email ? TextAlign.end : TextAlign.start,
+                  textAlign: user == uid ? TextAlign.end : TextAlign.start,
                   style: GoogleFonts.notoSans(
                     backgroundColor: Colors.white30,
                     height: 1.3,
@@ -150,7 +175,7 @@ Widget bodyPart(List chats) {
               );
             },
           );
-        }else{
+        } else {
           return Text(snapshot.error.toString());
         }
       });
