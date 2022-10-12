@@ -16,7 +16,6 @@ String? postfixText;
 
 
 login() {
-  print('loginfn');
   if (itIsSignUp == false) {
     mainheading = 'Login';
     prefixText = "don't have an account  ";
@@ -104,7 +103,6 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                           itIsSignUp = !itIsSignUp;
                           login();
                         });
-                        print(itIsSignUp.toString());
                       },
                       child: Text(postfixText!,
                           style: TextStyle(color: Colors.red, fontSize: 20))),
@@ -182,7 +180,6 @@ Future<UserCredential> signInWithGoogle( BuildContext context) async {
   Constants.email=googleUser?.email;
   // SharedPreferences shpref=await SharedPreferences.getInstance();
   // shpref.setString('email', Constants.email!);
-  print(Constants.email);
   // Obtain the auth details from the request
   final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
 
@@ -206,6 +203,8 @@ Future<UserCredential> signInWithGoogle( BuildContext context) async {
   );
   SharedPreferences shpref= await SharedPreferences.getInstance();
   shpref.setString('uid', usercred.user!.uid);
-  print(usercred.user!.uid??'no mail');
+  shpref.setString('email', usercred.user!.email??'no mail');
+  shpref.setString('image', usercred.user!.email??'no mail');
+  print(usercred.user!.email??'no mail');
 return usercred;
 }

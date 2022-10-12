@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 
+import 'package:bubble/bubble.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -25,21 +26,19 @@ class _HomePageState extends State<HomePage> {
   List<String> chats = [];
   int i = 0;
   String uid = '';
+  String email='';
 
   // String? constEmail=Constants.email;
 
   Future<String> getUserSharedPreference() async {
     SharedPreferences shpref = await SharedPreferences.getInstance();
     uid= shpref.getString('uid')??'nop';
+    email=shpref.getString('email')??'nop';
     return uid;
+
   }
 
-// @override
-//   void initState() {
-//     getUserSharedPreference();
-//     print('it is shredpreference $uid');
-//     super.initState();
-//   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +54,12 @@ class _HomePageState extends State<HomePage> {
               child: Icon(Icons.person, color: Colors.black87),
             ),
           ),
-          title: Text('${Constants.email}'),
+          title: FutureBuilder(
+            future: getUserSharedPreference(),
+            builder: (context, snapshot) {
+              {
+              return Text('${email}');
+            }}),
           actions: [
             IconButton(
                 onPressed: () {
@@ -105,7 +109,6 @@ class _HomePageState extends State<HomePage> {
                   prefixIcon: Icon(Icons.chat, color: Colors.black54),
                   suffixIcon: IconButton(
                       onPressed: () {
-                        print('send icon pressed');
 
                         FirebaseFirestore.instance.collection('message').add({
                           'userName': Constants.email,
@@ -118,7 +121,6 @@ class _HomePageState extends State<HomePage> {
                           chats.add(chattxt.text);
                           chattxt.text = '';
                         });
-                        print(chats);
                       },
                       icon: Icon(
                         Icons.send,
@@ -158,20 +160,21 @@ Widget bodyPart(List chats, String uid) {
             },
             itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, index) {
-              print(snapshot.data!.docs[index].data());
+
               String? user = temp3[index].data()['uid'];
-              print('user is $user');
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+              return Bubble(
+                margin: BubbleEdges.only(top: 10),
+                alignment:  user == uid ? Alignment.topRight : Alignment.topLeft,
+                nip: user == uid ?BubbleNip.rightBottom:BubbleNip.leftBottom,
                 child: Text(
-                  ' ${temp3[index].data()['message']} ',
-                  textAlign: user == uid ? TextAlign.end : TextAlign.start,
+                    '${temp3[index].data()['message']}',
                   style: GoogleFonts.notoSans(
-                    backgroundColor: Colors.white30,
                     height: 1.3,
                     fontSize: 20,
-                  ),
+              ),
                 ),
+              //     ),
+              // ),
               );
             },
           );
