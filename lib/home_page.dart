@@ -1,7 +1,4 @@
-// ignore_for_file: prefer_const_constructors
-
 import 'dart:convert';
-
 import 'package:bubble/bubble.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -26,19 +23,16 @@ class _HomePageState extends State<HomePage> {
   List<String> chats = [];
   int i = 0;
   String uid = '';
-  String email='';
-
-  // String? constEmail=Constants.email;
+  String email = '';
+  String phtourl = '';
 
   Future<String> getUserSharedPreference() async {
     SharedPreferences shpref = await SharedPreferences.getInstance();
-    uid= shpref.getString('uid')??'nop';
-    email=shpref.getString('email')??'nop';
+    uid = shpref.getString('uid') ?? 'nop';
+    email = shpref.getString('email') ?? 'nop';
+    phtourl = shpref.getString('image') ?? 'nop';
     return uid;
-
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -46,20 +40,25 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
           leading: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: CircleAvatar(
-              radius: 10,
-              backgroundColor: Colors.white54,
-              // Container(
-              //   decoration: BoxDecoration(color: Colors.white30,shape: BoxShape.circle,),
-              child: Icon(Icons.person, color: Colors.black87),
-            ),
+            child: FutureBuilder(
+                future: getUserSharedPreference(),
+                builder: (context, snapshot) {
+                  {
+                    return CircleAvatar(
+                      radius: 10,
+                      backgroundColor: Colors.white54,
+                      foregroundImage: NetworkImage(phtourl),
+                    );
+                  }
+                }),
           ),
           title: FutureBuilder(
-            future: getUserSharedPreference(),
-            builder: (context, snapshot) {
-              {
-              return Text('${email}');
-            }}),
+              future: getUserSharedPreference(),
+              builder: (context, snapshot) {
+                {
+                  return Text('${email}');
+                }
+              }),
           actions: [
             IconButton(
                 onPressed: () {
@@ -84,8 +83,7 @@ class _HomePageState extends State<HomePage> {
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     return bodyPart(chats, uid);
-                  }
-                  else{
+                  } else {
                     return Text('no uid');
                   }
                 }),
@@ -109,7 +107,6 @@ class _HomePageState extends State<HomePage> {
                   prefixIcon: Icon(Icons.chat, color: Colors.black54),
                   suffixIcon: IconButton(
                       onPressed: () {
-
                         FirebaseFirestore.instance.collection('message').add({
                           'userName': Constants.email,
                           'uid': uid,
@@ -160,21 +157,20 @@ Widget bodyPart(List chats, String uid) {
             },
             itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, index) {
-
               String? user = temp3[index].data()['uid'];
               return Bubble(
                 margin: BubbleEdges.only(top: 10),
-                alignment:  user == uid ? Alignment.topRight : Alignment.topLeft,
-                nip: user == uid ?BubbleNip.rightBottom:BubbleNip.leftBottom,
+                alignment: user == uid ? Alignment.topRight : Alignment.topLeft,
+                nip: user == uid ? BubbleNip.rightBottom : BubbleNip.leftBottom,
                 child: Text(
-                    '${temp3[index].data()['message']}',
+                  '${temp3[index].data()['message']}',
                   style: GoogleFonts.notoSans(
                     height: 1.3,
                     fontSize: 20,
-              ),
+                  ),
                 ),
-              //     ),
-              // ),
+                //     ),
+                // ),
               );
             },
           );

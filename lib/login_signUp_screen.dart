@@ -204,7 +204,7 @@ Future<UserCredential> signInWithGoogle( BuildContext context) async {
   SharedPreferences shpref= await SharedPreferences.getInstance();
   shpref.setString('uid', usercred.user!.uid);
   shpref.setString('email', usercred.user!.email??'no mail');
-  shpref.setString('image', usercred.user!.email??'no mail');
+  shpref.setString('image', usercred.user!.photoURL??'no photourl');
   print(usercred.user!.email??'no mail');
 return usercred;
 }
