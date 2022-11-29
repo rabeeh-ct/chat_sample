@@ -1,17 +1,19 @@
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:login_project/home_page.dart';
-import 'package:login_project/login_signUp_screen.dart';
+import 'package:login_project/constats.dart';
+import 'package:login_project/screen/login_signUp_screen.dart';
+import 'package:login_project/screen/users_list_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding();
   await Firebase.initializeApp();
-  runApp(const MyApp());
+  runApp( MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+   MyApp({super.key});
 
   // This widget is the root of your application.
   @override
@@ -26,7 +28,14 @@ class MyApp extends StatelessWidget {
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return HomePage();
+            // fn();
+            // print(Constants.user);
+            // print('${snapshot.data!.uid},,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,');
+            Constants.email=snapshot.data!.email;
+            Constants.photoUrl=snapshot.data!.photoURL??Constants.photoUrl;
+            Constants.username=snapshot.data!.displayName??Constants.name;
+            Constants.uid=snapshot.data!.uid;
+            return UsersListScreen();
           } else {
             return LoginSignupScreen();
           }
@@ -34,4 +43,5 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
+
 }
